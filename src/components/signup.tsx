@@ -10,22 +10,28 @@ const SignUp = () => {
     lastName: '',
     phone: '',
     email: '',
-    password: ''
+    password: '',
+    spotify: ''
     // spotify acct username / number?
   })
   const submitUserForm = (e: FormEvent) => {
+    // need to ask for permission to access spotify FIRST, then try to create the account in firebase
     e.preventDefault()
-    const {firstName, lastName, email, phone, password} = userInformation;
-    fb.auth().createUserWithEmailAndPassword(email, password).then(() => {
-      let user = fb.auth().currentUser
-      fb.database().ref('users/' + user?.uid).set({
-        firstName: firstName,
-        lastName: lastName,
-        email: email,
-        phone: phone,
-        id: user?.uid
-      }).then(() => axios.post(`${environments.serverUrl}/new-account`, { phone }))
+    const {firstName, lastName, email, phone, password, spotify} = userInformation;
+    axios.get('http://localhost:3001/api/spotify-login').then((response) => {
+      console.log(response)
     })
+    // fb.auth().createUserWithEmailAndPassword(email, password).then(() => {
+    //   let user = fb.auth().currentUser
+    //   fb.database().ref('users/' + user?.uid).set({
+    //     firstName: firstName,
+    //     lastName: lastName,
+    //     email: email,
+    //     phone: phone,
+    //     id: user?.uid,
+    //     spotify
+    //   }).then(() => axios.post(`${environments.serverUrl}/new-account`, { phone }))
+    // })
     .catch((err) => console.log(err))
   }
   const onInputChange = (name: string, value: string) => {
@@ -39,7 +45,9 @@ const SignUp = () => {
         <Input onChange={onInputChange} label="Phone Number" name="phone" value={userInformation.phone} />
         <Input onChange={onInputChange} label="Email" name="email" value={userInformation.email} />
         <Input onChange={onInputChange} label="Password" name="password" value={userInformation.password} />
-        <button type="submit" >Sign Up</button>
+        <div>Don't know your spotify URI? Go to your profile and click share, then click 'Copy Spotify URI'. Paste that value in here</div>
+        <Input onChange={onInputChange} label="Spotify Profile URI" name="spotify" value={userInformation.spotify} />
+        <a onClick={(e) => submitUserForm(e)}>Sign Up</a>
       </form>
     </div>
   )

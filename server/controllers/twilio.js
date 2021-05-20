@@ -4,6 +4,7 @@ const accountSid = process.env.TWILIO_S_ID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = require('twilio')(accountSid, authToken);
 const firebaseController = require('./firebase_users.js');
+const spotifyController = require('./spotify.js');
 
 const badMessageReply = () => {
   const twiml = new MessagingResponse()
@@ -37,5 +38,16 @@ module.exports = {
 
     res.writeHead(200, {'Content-Type': 'text/xml'});
     res.end(twiml.toString());
+  },
+  receiveTextToCreatePlaylist: (req, res, next) => {
+    const twiml = new MessagingResponse();
+    let messageBody = req.body.Body;
+
+    spotifyController.createPlaylist().then((response) => {
+      console.log(response, 'success')
+    }).catch(err => {
+      console.log(err, 'fail')
+       throw new Error(err)
+    })
   }
 }

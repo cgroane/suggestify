@@ -6,6 +6,8 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 const twilioController = require('./controllers/twilio');
+const spotifyController = require('./controllers/spotify');
+const cookieParser = require('cookie-parser');
 
 const port = 3001;
 
@@ -19,10 +21,11 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
 app.use(cors());
+app.use(cookieParser());
 
 // endpoints for interacting with spotify api using text messages
-app.post('/sms', twilioController.receiveSongSuggestion);
-app.post('/new-account', twilioController.sendWelcomeMessage)
+app.post('/api/sms', twilioController.receiveTextToCreatePlaylist);
+app.post('/api/new-account', twilioController.sendWelcomeMessage)
 
 
 // needed functions
@@ -32,12 +35,18 @@ app.post('/new-account', twilioController.sendWelcomeMessage)
 // look up song in catalog - get id
 // add song by id to playlist titled "suggestify"
 
-const path = require('path');
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '/../build/index.html'));
-});
+app.get('/api/spotify-login', spotifyController.spotifyAuth)
+app.get('/api/refresh_token', spotifyController.getRefreshToken);
+app.get('/api/callback', spotifyController.getCallback);
 
-
+const path = require('path')
+let root = path.join(__dirname, '..', 'build/')
+app.use(express.static(root))
+app.use(function(req, res, next) {
+  if (req.method === 'GET' && req.accepts('html') && !req.is('json') && !req.path.includes('.')) {
+    res.sendFile('index.html', { root })
+  } else next()
+})
 
 
 app.listen(port, () => {
