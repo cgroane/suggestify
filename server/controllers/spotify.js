@@ -3,7 +3,9 @@ const request = require('request');
 const axios = require('axios');
 require('dotenv').config({path: "/Users/connor.roane/Documents/Projects/suggestify/.env"});
 
-const redirect_uri = "http://localhost:3001/callback/"
+const client_Id = process.env.SPOTIFY_CLIENT_ID;
+const redirect_uri = process.env.SPOTIFY_REDIRECT_URI;
+
 let generateRandomString = function(length) {
   var text = '';
   var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -16,35 +18,35 @@ let generateRandomString = function(length) {
 const stateKey = 'spotify_auth_state';
 
 module.exports = {
-  spotifyAuth: (req, res, next) => {
-    console.log('spotify login')
-    var state = generateRandomString(16);
-    res.cookie(stateKey, state);
 
+  spotifyAuth: (req, res, next) => {
+    let state = generateRandomString(16);
+    res.cookie(stateKey, state);
+    
     let scope = 'playlist-modify-public user-follow-read'
-    res.redirect('https://accounts.spotify.com/authorize?' +
+    res.redirect(302, 'https://accounts.spotify.com/authorize?' +
     querystring.stringify({
       response_type: 'code',
-      client_id: process.env.SPOTIFY_CLIENT_ID,
+      client_id: client_Id,
       scope: scope,
-      redirect_uri: process.env.SPOTIFY_REDIRECT_URI,
+      redirect_uri: redirect_uri,
       state: state
     }))
   },
   getCallback: (req, res) => {
-
     // your application requests refresh and access tokens
     // after checking the state parameter
-  
+    console.log(req.cookies);
     var code = req.query.code || null;
     var state = req.query.state || null;
     var storedState = req.cookies ? req.cookies[stateKey] : null;
-  
+    
     if (state === null || state !== storedState) {
+      // console.log(state, storedState)
       res.redirect('/#' +
-        querystring.stringify({
-          error: 'state_mismatch'
-        }));
+      querystring.stringify({
+        error: 'state_mismatch'
+      }));
     } else {
       res.clearCookie(stateKey);
       var authOptions = {

@@ -18,10 +18,7 @@ const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = require('twilio')(accountSid, authToken);
 
 app.use(bodyParser.urlencoded({ extended: false }))
-app.use(bodyParser.json())
-
-app.use(cors());
-app.use(cookieParser());
+app.use(bodyParser.json());
 
 // endpoints for interacting with spotify api using text messages
 app.post('/api/sms', twilioController.receiveTextToCreatePlaylist);
@@ -46,7 +43,7 @@ app.use(function(req, res, next) {
   if (req.method === 'GET' && req.accepts('html') && !req.is('json') && !req.path.includes('.')) {
     res.sendFile('index.html', { root })
   } else next()
-})
+}).use(cors()).use(cookieParser());
 
 
 app.listen(port, () => {

@@ -1,5 +1,6 @@
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 const bodyParser = require("body-parser");
+require('dotenv').config();
 const accountSid = process.env.TWILIO_S_ID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = require('twilio')(accountSid, authToken);

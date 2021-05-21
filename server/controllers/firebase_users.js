@@ -1,7 +1,7 @@
 const admin = require("firebase-admin");
 
 let firebaseConnect = admin.initializeApp({
-  credential: admin.credential.cert('/Users/connor.roane/Documents/Projects/suggestify/bangas-united-firebase-admin.json'),
+  credential: admin.credential.cert('/Users/connor.roane/Documents/practice/suggestify/bangas-united-firebase-admin.json'),
   databaseURL: "https://bangas-united.firebaseio.com"
 });
 

@@ -16,8 +16,8 @@
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "firebase": "^7.14.6",
-    "firebase-admin": "^8.12.1",
+    "firebase": "^8.6.2",
+    "firebase-admin": "^9.8.0",
     "querystring": "^0.2.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
@@ -49,5 +49,17 @@
       "last 1 safari version"
     ]
   },
-  "homepage": "."
+  "homepage": "http://.",
+  "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
+  "main": "index.js",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cgroane/suggestify.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cgroane/suggestify/issues"
+  }
 }
