@@ -1,6 +1,8 @@
+require('dotenv').config({
+  path: '../.env'
+});
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 const bodyParser = require("body-parser");
-require('dotenv').config();
 const accountSid = process.env.TWILIO_S_ID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = require('twilio')(accountSid, authToken);
@@ -15,14 +17,18 @@ const badMessageReply = () => {
   res.end(twiml.toString());
 }
 
+/**
+ * as of jan 2024, sms phone numbers must be verified and therefore, we cannot send messages to actual phones yet.
+ * 
+ */
 module.exports = {
   sendWelcomeMessage: (req, res, next) => {
     const phone = req.body
     client.messages.create({
       body: `Yo! You just set up your account. Save this number - send a song you've been loving to your friends. Just copy a link from spotify and tell us who to send it to.`,
-      from: '+12056274811',
-      to: `+1${req.body.phone}`
-    }).then(message => message)
+      from: '+18333441764',
+      to: `+18777804236` // this needs to change to `+1${req.body.phone}` when deployed and phone registered
+    }).then(message => console.log(message.sid)).catch((err)=> console.error(err));
   },
   receiveSongSuggestion: (req, res, next) => {
     // receive message with name and song
@@ -44,11 +50,6 @@ module.exports = {
     const twiml = new MessagingResponse();
     let messageBody = req.body.Body;
 
-    spotifyController.createPlaylist().then((response) => {
-      console.log(response, 'success')
-    }).catch(err => {
-      console.log(err, 'fail')
-       throw new Error(err)
-    })
+    next()
   }
 }

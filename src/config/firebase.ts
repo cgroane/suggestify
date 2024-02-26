@@ -1,4 +1,4 @@
-import firebase from 'firebase'
+import firebase from 'firebase/app';
 require('dotenv').config({path: "/Users/connor.roane/Documents/Projects/suggestify/.env"});
 console.log(process.env.FIREBASE_API_KEY)
 
@@ -12,9 +12,9 @@ let config = {
   appId: "1:58611865268:web:f76f3f543c86bc543329e1",
   measurementId: "G-H5Z8PL4XB3"
 };
-firebase.initializeApp(config);
+const app = firebase.initializeApp(config);
 
 // Get a reference to the database service
-let fb = firebase;
 
-export default fb;
+
+export default app;
