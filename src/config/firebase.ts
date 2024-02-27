@@ -1,8 +1,6 @@
-import firebase from 'firebase/app';
-require('dotenv').config({path: "/Users/connor.roane/Documents/Projects/suggestify/.env"});
-console.log(process.env.FIREBASE_API_KEY)
+import { initializeApp } from 'firebase/app';
 
-let config = {
+const firebaseConfig = {
   apiKey: "AIzaSyCXUsaJR7pwtq5tId-ykf-2B9-Y1jRqBRg",
   authDomain: "bangas-united.firebaseapp.com",
   databaseURL: "https://bangas-united.firebaseio.com",
@@ -12,7 +10,7 @@ let config = {
   appId: "1:58611865268:web:f76f3f543c86bc543329e1",
   measurementId: "G-H5Z8PL4XB3"
 };
-const app = firebase.initializeApp(config);
+const app = initializeApp(firebaseConfig);
 
 // Get a reference to the database service
 

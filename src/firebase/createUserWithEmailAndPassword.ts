@@ -1,24 +1,34 @@
 import app from "../config/firebase"
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
-import { getFirestore, setDoc, doc } from 'firebase/firestore'
+import { getFirestore, setDoc, doc, getDoc } from 'firebase/firestore'
 import { environments } from "../config/environments";
 import axiosInstance from "../config/axios";
 
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+type FirebaseUserRecordData = Spotify.SpotifyProfile & {
+    phone: string;
+    pw: string;
+}
 
-const signUp = (userData: { firstName: string; lastName: string; email: string; phone: string; spotify: any; password: string }) => {
-    const { firstName, lastName, email, phone, spotify, password } = userData;
-    createUserWithEmailAndPassword(auth, email, password).then((data) => {
-          setDoc(doc(db, 'users', data?.user.uid), {
-            firstName: firstName,
-            lastName: lastName,
-            email: email,
-            phone: phone,
-            id: data?.user?.uid,
-            spotify
-        }).then(() => axiosInstance.post(`${environments.serverUrl}/new-account`, { phone }));
-    });
+const signUp = async (userData: FirebaseUserRecordData) => {
+    const { phone, pw, email, display_name, id } = userData;
+    const docRef = doc(db, 'users', id);
+    
+    const exists = (await getDoc(docRef));
+        if (!exists.exists()) {
+            const { user } = await createUserWithEmailAndPassword(auth, email, pw)
+            await setDoc(doc(db, 'users', id), {
+                displayName: display_name,
+                email: email,
+                phone,
+                firestore_uid: user?.uid,
+                spotifyId: id,
+            });
+            axiosInstance.post(`${environments.serverUrl}/new-account`, { phone })
+    } else {
+        console.log('exists, fetch refresh token?');
+    }
 };
 export default signUp;

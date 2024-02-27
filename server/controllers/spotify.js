@@ -7,7 +7,6 @@ require('dotenv').config({path: "/Users/connor.roane/Documents/Projects/suggesti
 
 const client_id = process.env.SPOTIFY_CLIENT_ID;
 const redirect_uri = process.env.SPOTIFY_REDIRECT_URI;
-console.log(redirect_uri);
 const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
 
 
@@ -71,19 +70,8 @@ module.exports = {
         var access_token = body.access_token,
             refresh_token = body.refresh_token;
 
-        var options = {
-          url: 'https://api.spotify.com/v1/me',
-          headers: { 'Authorization': 'Bearer ' + access_token },
-          json: true
-        };
-
-        // use the access token to access the Spotify Web API
-        request.get(options, function(error, response, body) {
-          console.log(body);
-        });
-
         // we can also pass the token to the browser to make requests from there
-        res.redirect('/#' +
+        res.redirect('/finish#' +
           querystring.stringify({
             access_token: access_token,
             refresh_token: refresh_token
