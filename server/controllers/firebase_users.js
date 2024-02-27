@@ -1,16 +1,13 @@
-const admin = require("firebase-admin");
+require('dotenv').config({path: "/Users/connor.roane/Documents/Projects/suggestify/.env"});
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCXUsaJR7pwtq5tId-ykf-2B9-Y1jRqBRg",
-  authDomain: "bangas-united.firebaseapp.com",
-  databaseURL: "https://bangas-united.firebaseio.com",
-  projectId: "bangas-united",
-  storageBucket: "bangas-united.appspot.com",
-  messagingSenderId: "58611865268",
-  appId: "1:58611865268:web:f76f3f543c86bc543329e1",
-  measurementId: "G-H5Z8PL4XB3"
-};
-let firebaseConnect = admin.initializeApp(firebaseConfig);
+var admin = require("firebase-admin");
+
+var serviceAccount = require("../bangas-united-firebase-adminsdk-7mg4j-9c6af9a521.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: `https://${process.env.REACT_APP_PROJECT_ID}.firebaseio.com`
+});
 
 module.exports = {
   lookupUser: (email) => firebaseConnect.auth().getUserByEmail(email).then(user => user).catch((err) => err),
