@@ -66,7 +66,7 @@ const Password = ({
     <div className="hero min-h-screen bg-base-200">
     <div className="hero-content flex-col lg:flex-row-reverse">
       <div className="text-center lg:text-left">
-        <h4 className="text-3xl w-1/2 font-bold mx-auto">Finish account setup with a phone number and password</h4>
+        <h4 className="text-xl md:text-3xl w-1/2 font-bold mx-auto">Finish account setup with a phone number and password</h4>
       </div>
       <div className="card shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
         <form className="card-body">
