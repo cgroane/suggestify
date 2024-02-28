@@ -10,10 +10,13 @@ const db = getFirestore(app);
 type FirebaseUserRecordData = Spotify.SpotifyProfile & {
     phone: string;
     pw: string;
+    accessToken: string;
+    refreshToken: string;
+    playlistId?: string
 }
 
 const signUp = async (userData: FirebaseUserRecordData) => {
-    const { phone, pw, email, display_name, id } = userData;
+    const { phone, pw, email, display_name, id, accessToken, refreshToken, playlistId } = userData;
     const docRef = doc(db, 'users', id);
     
     const exists = (await getDoc(docRef));
@@ -25,6 +28,9 @@ const signUp = async (userData: FirebaseUserRecordData) => {
                 phone,
                 firestore_uid: user?.uid,
                 spotifyId: id,
+                accessToken,
+                refreshToken,
+                playlistId
             });
             axiosInstance.post(`${environments.serverUrl}/new-account`, { phone })
     } else {

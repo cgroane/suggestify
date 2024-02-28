@@ -6,7 +6,7 @@ import Password from './pages/FinishSetUp';
 
 function App() {
   return (
-    <div className="App w-screen p-16">
+    <div className="App w-screen">
       <Routes>
         <Route index element={<SignUp />} />
         <Route element={<Password />} path='/finish' />
