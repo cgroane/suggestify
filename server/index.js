@@ -1,14 +1,13 @@
 const path = require('path')
 require('dotenv').config({path: path.resolve(__dirname, `../.env`)});
 
-console.log(process.env.ENVIRONMENT_VAR);
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const twilioController = require('./controllers/twilio');
 const spotifyController = require('./controllers/spotify');
 const cookieParser = require('cookie-parser');
-const port = 3001;
+const port = process.env.PORT || 3001;
 
 const app = express();
 
