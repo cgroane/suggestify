@@ -1,2 +1,2 @@
 [phases.install]
-cmd = 'npm ci --legacy-peer-deps'
+cmds = ['npm ci --legacy-peer-deps --force']
