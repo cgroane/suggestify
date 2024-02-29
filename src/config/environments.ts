@@ -7,6 +7,6 @@
 console.log(process.env.PRODUCTION_VAR);
 
 export const environments = {
-  serverUrl: "http://localhost:3001/api"
+  serverUrl: process.env.REACT_APP_API_URL
 }
 
