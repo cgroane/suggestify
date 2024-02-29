@@ -35,7 +35,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "serve": " NODE_ENV=$ENVIRONMENT nodemon server/index.js"
+    "build:prod": "react-scripts build nodemon server/index.js",
+    "serve": "nodemon server/index.js"
   },
   "eslintConfig": {
     "extends": "react-app"
