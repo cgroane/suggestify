@@ -60,6 +60,34 @@ const FinishSetUp = ({
         getSpotifyData();
     }, [getSpotifyData])
 
+    const signUp = useCallback( async (userData: FirebaseUserRecordData) => {
+        const { phone, pw, email, display_name, id, accessToken, refreshToken, playlistId } = userData;
+        try {
+            const docRef = doc(db, 'users', id);
+            const exists = await getDoc(docRef);
+            if (!exists.exists()) {
+                const { user } = await createUserWithEmailAndPassword(auth, email, pw)
+                const docData = await setDoc(doc(db, 'users', id), {
+                    displayName: display_name,
+                    email: email,
+                    phone,
+                    firestore_uid: user?.uid,
+                    spotifyId: id,
+                    accessToken,
+                    refreshToken,
+                    playlistId
+                });
+
+                const newAcc = await axiosInstance.post(`${environments.serverUrl}/new-account`, { phone }).then(() => setStatus(LoadingState.IDLE))
+                return { docData, newAcc };
+            } else {
+                console.log('exists, fetch refresh token?');
+            }
+        } catch (err) {
+            return err;
+        }
+    }, [setStatus])
+
     const submit = useCallback(async (e: React.SyntheticEvent<HTMLButtonElement>) => {
         e.preventDefault()
         if (!!JSON.stringify(spotifyData) && !!JSON.stringify(data)) {
@@ -95,34 +123,7 @@ const FinishSetUp = ({
                 setStatus(LoadingState.ERROR);
             }
         }
-    }, [setStatus, data, spotifyData, token.access_token, token.refresh_token]);
-    const signUp = async (userData: FirebaseUserRecordData) => {
-        const { phone, pw, email, display_name, id, accessToken, refreshToken, playlistId } = userData;
-        try {
-            const docRef = doc(db, 'users', id);
-            const exists = await getDoc(docRef);
-            if (!exists.exists()) {
-                const { user } = await createUserWithEmailAndPassword(auth, email, pw)
-                const docData = await setDoc(doc(db, 'users', id), {
-                    displayName: display_name,
-                    email: email,
-                    phone,
-                    firestore_uid: user?.uid,
-                    spotifyId: id,
-                    accessToken,
-                    refreshToken,
-                    playlistId
-                });
-
-                const newAcc = await axiosInstance.post(`${environments.serverUrl}/new-account`, { phone }).then(() => setStatus(LoadingState.IDLE))
-                return { docData, newAcc };
-            } else {
-                console.log('exists, fetch refresh token?');
-            }
-        } catch (err) {
-            return err;
-        }
-    }
+    }, [setStatus, data, spotifyData, token.access_token, token.refresh_token, signUp]);
   return (
     <div className="hero min-h-screen bg-base-200">
     <div className="hero-content flex-col lg:flex-row-reverse">
