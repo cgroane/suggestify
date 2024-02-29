@@ -29,6 +29,9 @@ const Complete = () => {
         <div className={`tooltip copy-tooltip ${copied ? 'copy-tooltip-open' : ''}`} data-tip={'Copied!'}>
             <span onClick={copyToClipboard} className="link link-secondary pointer" >{transformNumber}</span>
         </div>
+            and include the user's spotify username at the end of the link like this:
+            <pre><code>&user=insert_username_here</code></pre>
+        
       </p>
       <Link to={'/'} className="btn btn-primary">Back to Home</Link>
     </div>
