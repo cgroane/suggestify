@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react"
-import { useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { getToken } from "../utils/getToken";
 import axiosInstance from "../config/axios";
 import { LoadingState, useLoadingContext } from "../context/loading";
@@ -27,7 +27,7 @@ const FinishSetUp = ({
     const { status, setStatus } = useLoadingContext();
     const [spotifyData, setSpotifyData] = useState<Spotify.SpotifyProfile>({} as Spotify.SpotifyProfile);
     const { hash } = useLocation();
-
+    const navigate = useNavigate();
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setData((prev) => ({
             ...prev,
@@ -117,13 +117,15 @@ const FinishSetUp = ({
                     ...spotifyData,
                 });
             setStatus(LoadingState.IDLE);
+            navigate('/done');
+
             } catch(err) {
                 alert('There was an error getting the necessary data to create your account');
                 console.error(err);
                 setStatus(LoadingState.ERROR);
             }
         }
-    }, [setStatus, data, spotifyData, token.access_token, token.refresh_token, signUp]);
+    }, [setStatus, data, spotifyData, token.access_token, token.refresh_token, signUp, navigate]);
   return (
     <div className="hero min-h-screen bg-base-200">
     <div className="hero-content flex-col lg:flex-row-reverse">

@@ -15,3 +15,9 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+.tooltip.copy-tooltip:hover:before,.tooltip.copy-tooltip:hover:after {
+  opacity: 0;
+}
+.tooltip.copy-tooltip.copy-tooltip-open:before, .tooltip.copy-tooltip.copy-tooltip-open:after {
+  opacity: 1;
+}
