@@ -2,16 +2,29 @@ import React, { useCallback, useEffect, useMemo, useState } from "react"
 import { useLocation } from "react-router";
 import { getToken } from "../utils/getToken";
 import axiosInstance from "../config/axios";
-import signUp from "../firebase/createUserWithEmailAndPassword";
+import { LoadingState, useLoadingContext } from "../context/loading";
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { setDoc, doc, getDoc } from 'firebase/firestore'
+import { auth, db } from "../firebase/createUserWithEmailAndPassword";
+import { environments } from "../config/environments";
 
-interface PasswordProps {}
-const Password = ({
+type FirebaseUserRecordData = Spotify.SpotifyProfile & {
+    phone: string;
+    pw: string;
+    accessToken: string;
+    refreshToken: string;
+    playlistId?: string
+}
+
+interface FinishSetUpProps {}
+const FinishSetUp = ({
   ...props
-}: PasswordProps ) => {
+}: FinishSetUpProps ) => {
     const [data, setData] = useState({
         pw: '',
         phone: ''
     })
+    const { status, setStatus } = useLoadingContext();
     const [spotifyData, setSpotifyData] = useState<Spotify.SpotifyProfile>({} as Spotify.SpotifyProfile);
     const { hash } = useLocation();
 
@@ -26,22 +39,33 @@ const Password = ({
     }, [hash]);
 
     const getSpotifyData = useCallback(async () => {
-        const response = await axiosInstance.get('https://api.spotify.com/v1/me', {
+        try {
+            const response = await axiosInstance.get('https://api.spotify.com/v1/me', {
             headers: {
                 'Authorization': 'Bearer ' + token.access_token,
                 "Content-Type": 'application/json'
             },
         });
-        setSpotifyData(JSON.parse(response.data));
-    }, [token]);
+            if (!response.data){
+                setStatus(LoadingState.ERROR);
+            }
+            setSpotifyData(JSON.parse(response.data));
+        } catch (err) {
+            setStatus(LoadingState.ERROR);
+            console.log(err)
+        }
+    }, [token, setStatus, setSpotifyData]);
 
     useEffect(() => {
         getSpotifyData();
     }, [getSpotifyData])
 
-    const submit = async (e: React.SyntheticEvent<HTMLButtonElement>) => {
+    const submit = useCallback(async (e: React.SyntheticEvent<HTMLButtonElement>) => {
+        e.preventDefault()
         if (!!JSON.stringify(spotifyData) && !!JSON.stringify(data)) {
-            const playlistData = await axiosInstance.post<string, {data: string}>(`https://api.spotify.com/v1/users/${spotifyData.id}/playlists`,JSON.stringify({
+            try {
+                setStatus(LoadingState.LOADING);
+                const playlistData = await axiosInstance.post<string, {data: string}>(`https://api.spotify.com/v1/users/${spotifyData.id}/playlists`,JSON.stringify({
                 name: "suggestify",
                 public: "true"
               }), {
@@ -51,15 +75,52 @@ const Password = ({
                 }
               }
             );
+            if (!playlistData.data) {
+                setStatus(LoadingState.ERROR);
+                return;
+            }
             const { id } = JSON.parse(playlistData.data);
-            await signUp({
-                phone: data.phone,
-                pw: data.pw,
-                accessToken: token.access_token,
-                refreshToken: token.refresh_token,
-                playlistId: id,
-                ...spotifyData,
-            })
+                await signUp({
+                    phone: data.phone,
+                    pw: data.pw,
+                    accessToken: token.access_token,
+                    refreshToken: token.refresh_token,
+                    playlistId: id,
+                    ...spotifyData,
+                });
+            setStatus(LoadingState.IDLE);
+            } catch(err) {
+                alert('There was an error getting the necessary data to create your account');
+                console.error(err);
+                setStatus(LoadingState.ERROR);
+            }
+        }
+    }, [setStatus, data, spotifyData, token.access_token, token.refresh_token]);
+    const signUp = async (userData: FirebaseUserRecordData) => {
+        const { phone, pw, email, display_name, id, accessToken, refreshToken, playlistId } = userData;
+        try {
+            const docRef = doc(db, 'users', id);
+            const exists = await getDoc(docRef);
+            if (!exists.exists()) {
+                const { user } = await createUserWithEmailAndPassword(auth, email, pw)
+                const docData = await setDoc(doc(db, 'users', id), {
+                    displayName: display_name,
+                    email: email,
+                    phone,
+                    firestore_uid: user?.uid,
+                    spotifyId: id,
+                    accessToken,
+                    refreshToken,
+                    playlistId
+                });
+
+                const newAcc = await axiosInstance.post(`${environments.serverUrl}/new-account`, { phone }).then(() => setStatus(LoadingState.IDLE))
+                return { docData, newAcc };
+            } else {
+                console.log('exists, fetch refresh token?');
+            }
+        } catch (err) {
+            return err;
         }
     }
   return (
@@ -71,7 +132,7 @@ const Password = ({
       <div className="card shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
         <form className="card-body">
         <div className="form-control">
-                    <label className="input input-bordered flex items-center gap-2 my-16">
+                    <label className="input input-bordered flex items-center gap-2 my-8">
                         <svg fill="#000000" height="16px" width="16px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" 
 	                            viewBox="0 0 32 32" xmlSpace="preserve">
                             <g>
@@ -116,14 +177,16 @@ const Password = ({
                         </label>
                     </div>
                     <div className="form-control">
-                        <label className="input input-bordered flex items-center gap-2 my-16">
+                        <label className="input input-bordered flex items-center gap-2 my-8">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 opacity-70"><path fillRule="evenodd" d="M14 6a4 4 0 0 1-4.899 3.899l-1.955 1.955a.5.5 0 0 1-.353.146H5v1.5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1-.5-.5v-2.293a.5.5 0 0 1 .146-.353l3.955-3.955A4 4 0 1 1 14 6Zm-4-2a.75.75 0 0 0 0 1.5.5.5 0 0 1 .5.5.75.75 0 0 0 1.5 0 2 2 0 0 0-2-2Z" clipRule="evenodd" /></svg>
                             <input onChange={handleChange} name="pw" type="password" className="grow" value={data.pw} placeholder="password" />
                         
                         </label>
                     </div>
                     <div className="form-control mt-6">
-                    <button onClick={submit} className="btn btn-accent">Finish</button>
+                    <button onClick={submit} className={"btn btn-neutral"} >
+                        {status === LoadingState.LOADING ? <span className="loading loading-spinner text-primary"></span> : 'Finish'}
+                    </button>
                     </div>
         </form>
       </div>
@@ -132,4 +195,4 @@ const Password = ({
   )
 };
 
-export default Password;
+export default FinishSetUp;
