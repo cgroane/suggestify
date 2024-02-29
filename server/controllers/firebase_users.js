@@ -2,11 +2,9 @@ const { initializeApp, cert } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 
 require('dotenv').config({path: "/Users/connor.roane/Documents/Projects/suggestify/.env"});
-
-var serviceAccount = require("../bangas-united-firebase-adminsdk-7mg4j-9c6af9a521.json");
-
+const saCert = JSON.parse(process.env.FIREBASE_SA_CERT);
 initializeApp({
-  credential: cert(serviceAccount),
+  credential: cert(saCert),
   databaseURL: `https://${process.env.REACT_APP_PROJECT_ID}.firebaseio.com`
 });
 

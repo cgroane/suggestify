@@ -31,7 +31,7 @@ module.exports = {
       from: '+18333441764',
       to: `+18777804236` // this needs to change to `+1${req.body.phone}` when deployed and phone registered
     }).then(message => {
-      console.log(message.sid)
+      res.send([200]);
     }).catch((err)=> console.error(err));
   },
   optIn: (req, res, next) => {
