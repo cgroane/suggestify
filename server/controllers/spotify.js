@@ -19,9 +19,8 @@ const generateRandomString = function(length) {
 var stateKey = 'spotify_auth_state';
 
 module.exports = {
-
+  /** @type {import("express").RequestHandler} */
   spotifyAuth: function(req, res) {
-
     var state = generateRandomString(16);
     res.cookie(stateKey, state);
   
@@ -36,6 +35,7 @@ module.exports = {
         state: state
       }));
   },
+/** @type {import("express").RequestHandler} */
   getCallback: (req, res) => {
     // your application requests refresh and access tokens
     // after checking the state parameter
@@ -85,12 +85,11 @@ module.exports = {
     });
     }
   },
-  
-  getRefreshToken: (req, res) => {
-    // this should fired from twilio
-    // requesting access token from refresh token
+/** @type {import("express").RequestHandler} */
+  getRefreshToken: (req, res, next) => {
+    console.log(req.userToSearch);
     console.log('refresh')
-    var refresh_token = req.query.refresh_token;
+    var refresh_token = req.userToSearch.refreshToken;
     var authOptions = {
       url: 'https://accounts.spotify.com/api/token',
       headers: { 'Authorization': 'Basic ' + (Buffer.from(process.env.SPOTIFY_CLIENT_ID + ':' + client_secret).toString('base64')) },
@@ -100,16 +99,25 @@ module.exports = {
       },
       json: true
     };
-  
+    
     request.post(authOptions, function(error, response, body) {
       if (!error && response.statusCode === 200) {
         var access_token = body.access_token;
         res.send({
           'access_token': access_token
         });
+        req.userToSearch = {...req.userToSearch, accessToken: access_token}
+        next();
+        res.status(303);
+        return;
+      } else {
+        throw new Error(error);
       }
     });
+  
   },
+/** @type {import("express").RequestHandler} */
+
   createPlaylist: (req, res, next) => {
     return axios.post(`https://api.spotify.com/v1/users/${req}/playlists`, {
       name: 'suggestify',

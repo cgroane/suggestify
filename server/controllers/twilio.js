@@ -1,15 +1,15 @@
+/** @type {import("express").RequestHandler} */
 require('dotenv').config({
   path: '../.env'
 });
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
-const bodyParser = require("body-parser");
 const accountSid = process.env.TWILIO_S_ID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const client = require('twilio')(accountSid, authToken);
 const firebaseController = require('./firebase_users.js');
-const spotifyController = require('./spotify.js');
 const axios = require('axios');
 const utils = require('../utils/getSongUri.js');
+const request = require('request');
 
 const badMessageReply = () => {
   const twiml = new MessagingResponse()
@@ -24,39 +24,25 @@ const badMessageReply = () => {
  * 
  */
 module.exports = {
+/** @type {import("express").RequestHandler} */
+
   sendWelcomeMessage: (req, res, next) => {
     const phone = req.body
     client.messages.create({
       body: `Yo! You just set up your account. Save this number - send a song you've been loving to your friends. Just copy a link from spotify and tell us who to send it to. Reply with a HELL YES to get started.`,
       from: '+18333441764',
       to: `+18777804236` // this needs to change to `+1${req.body.phone}` when deployed and phone registered
-    }).then(message => {
+    }).then(() => {
       res.send([200]);
     }).catch((err)=> console.error(err));
   },
-  optIn: (req, res, next) => {
-    let messageBody = req.body.Body;
-    if (messageBody.toUpperCase().contains('HELL YES')) {
-      const twiml = new MessagingResponse();
-    }
-
+  alertSuccess: (req, res, next) => {
+    console.log(req.body.phone, req.body.From)
+    const userToSearch = req.userToSearch;
+    
   },
-  receiveSongSuggestion: (req, res, next) => {
-    // receive message with name and song
-    const twiml = new MessagingResponse();
-    let messageBody = req.body.Body;
-    // messageBody = messageBody.split(' ')
+/** @type {import("express").RequestHandler} */
 
-    // if (messageBody[0].contains('@')) {
-      const user = firebaseController.lookupUser(messageBody).then((response) => firebaseController.lookupUserProfile(response.uid))
-    // } else {
-    //   res.status(400).send()
-    // }
-    twiml.message('The Robots are coming! Head for the hills!');
-
-    res.writeHead(200, {'Content-Type': 'text/xml'});
-    res.end(twiml.toString());
-  },
   receiveTextToAddToPlaylist: async (req, res, next) => {
     const twiml = new MessagingResponse();
     let messageBody = req.body.Body;
@@ -68,7 +54,9 @@ module.exports = {
       const suggestedSong = message[0];
       const userSearch = await firebaseController.lookupUserProfile(userToSearch);
       const song = utils.getSongUri(suggestedSong);
-      axios.post(`https://api.spotify.com/v1/playlists/${userSearch.playlistId}/tracks`, {
+      req.userToSearch = userSearch;
+
+      const response = await axios.post(`https://api.spotify.com/v1/playlists/${userSearch.playlistId}/tracks`, {
         uris: [
           ...song
         ]
@@ -76,10 +64,28 @@ module.exports = {
         headers: {
           "Authorization": "Bearer " + userSearch.accessToken
         }
-      }).then(() => console.log('okay')).catch((err) => {
-        if (err.status === 401) {
-          console.log('401')
-        }
+      }).then(() => {
+        client.messages.create({
+          body: `Hey, someone added a song to your playlist! Check it out: https://open.spotify.com/playlist/${userSearch.playlistId}`,
+          from: '+18333441764',
+          to: `+18777804236` // this needs to change to `${userToSearch.phone}` when deployed and phone registered
+        }).then(() => {
+          client.messages.create({
+            body: `Alright, we let ${userSearch.displayName} know you added a song to their suggestify playlist`,
+            from: '+18333441764',
+            to: `+18777804236` // this needs to change to `+1${req.body.phone}` when deployed and phone registered
+          }).then(() => {
+            res.send([200]);
+            return;
+          });
+        })
+        console.log('okay');
+      }).catch((err) => {
+        if (err.response.data.error.message.toLowerCase().includes(('expired'))) {
+          next();
+          res.status(303);
+          return;
+        } 
       });
     }
   }

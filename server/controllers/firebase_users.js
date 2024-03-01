@@ -44,5 +44,21 @@ module.exports = {
       return;
     }
     return [...snapshot.forEach((doc) => doc.data())];
+  },
+  /** @type {import("express").RequestHandler} */
+  updateUser: async (req, res) => {
+    const id = req.userToSearch.spotifyId;
+    const userRef = db.collection('users').doc(id);
+    const snapshot = await userRef.get();
+    if (snapshot.empty) {
+      console.log(`can't find that user`);
+      res.status(404).statusMessage('Could not locate that user');
+      throw new Error(`User does not exist`);
+    } else {
+      const response = await userRef.update({...req.userToSearch});
+      res.status(200);
+      res.redirect('/api/sms');
+      return response;
+    }
   }
 }

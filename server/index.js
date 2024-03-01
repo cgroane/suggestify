@@ -1,11 +1,12 @@
+/** @type {import("express").RequestHandler} */
 const path = require('path')
 require('dotenv').config({path: path.resolve(__dirname, `../.env`)});
 
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const twilioController = require('./controllers/twilio');
-const spotifyController = require('./controllers/spotify');
+const twilioRouter = require('./routes/twilio');
+const spotifyRouter = require('./routes/spotify');
 const cookieParser = require('cookie-parser');
 const port = process.env.PORT || 3001;
 
@@ -23,11 +24,11 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   next();
 });
+app.use('', spotifyRouter); 
+app.use('', twilioRouter);  
 
 
-// endpoints for interacting with spotify api using text messages
-app.post('/api/sms', twilioController.receiveTextToAddToPlaylist);
-app.post('/api/new-account', twilioController.sendWelcomeMessage)
+// endpoints for interacting with spotify api using text message
 
 
 // needed functions
@@ -37,10 +38,6 @@ app.post('/api/new-account', twilioController.sendWelcomeMessage)
 // look up song in catalog - get id
 // add song by id to playlist titled "suggestify"
 
-app.get('/api/spotify-login', spotifyController.spotifyAuth)
-app.get('/api/refresh_token', spotifyController.getRefreshToken);
-app.get('/api/callback', spotifyController.getCallback);
-app.post('/api/sms/:user_id', spotifyController.createPlaylist);
 
 let root = path.join(__dirname, '..', 'build/')
 app.use(express.static(root))
