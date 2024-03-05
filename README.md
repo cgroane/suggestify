@@ -1,3 +1,6 @@
+## Notes
+Future plans include: 'Friend' feature, which will require an interface to see other users and determine if they are in user's friends already plus interface for accepting and denying friend requests, login page to view friend requests, and auth guard on those pages :)
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
