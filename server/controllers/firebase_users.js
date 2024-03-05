@@ -56,7 +56,6 @@ module.exports = {
       throw new Error(`User does not exist`);
     } else {
       const response = await userRef.update({...req.userToSearch});
-      res.status(200);
       res.redirect('/api/sms');
       return response;
     }
