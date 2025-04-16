@@ -30,7 +30,7 @@ module.exports = {
     const phone = req.body
     client.messages.create({
       body: `Yo! You just set up your account. Save this number - send a song you've been loving to your friends. Just copy a link from spotify and tell us who to send it to. Reply with a HELL YES to get started.`,
-      from: '+18333441764',
+      from: `+${process.env.REACT_APP_TWILIO_PHONE_NUMBER}`,
       to: `+18777804236` // this needs to change to `+1${req.body.phone}` when deployed and phone registered
     }).then(() => {
       res.send([200]);
@@ -67,12 +67,12 @@ module.exports = {
       }).then(() => {
         client.messages.create({
           body: `Hey, someone added a song to your playlist! Check it out: https://open.spotify.com/playlist/${userSearch.playlistId}`,
-          from: '+18333441764',
+          from: `+${process.env.REACT_APP_TWILIO_PHONE_NUMBER}`,
           to: `+18777804236` // this needs to change to `${userToSearch.phone}` when deployed and phone registered
         }).then(() => {
           client.messages.create({
             body: `Alright, we let ${userSearch.displayName} know you added a song to their suggestify playlist`,
-            from: '+18333441764',
+            from: `+${process.env.REACT_APP_TWILIO_PHONE_NUMBER}`,
             to: `+18777804236` // this needs to change to `+1${req.body.phone}` when deployed and phone registered
           }).then(() => {
             res.send([200]);
